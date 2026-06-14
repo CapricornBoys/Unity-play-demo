@@ -97,6 +97,34 @@ namespace GameUI.Match3
             StartCoroutine(TrySwapRoutine(first, clicked));
         }
 
+        /// <summary>
+        /// 根据棋子的拖拽方向尝试交换一个相邻位置。
+        /// 返回 true 表示已接受本次拖拽，棋子视图应抑制随后的点击事件。
+        /// </summary>
+        public bool TryDragSwap(int row, int column, Vector2Int direction)
+        {
+            if (processing)
+            {
+                return false;
+            }
+
+            int targetRow = row + direction.y;
+            int targetColumn = column + direction.x;
+            if (targetRow < 0
+                || targetRow >= Rows
+                || targetColumn < 0
+                || targetColumn >= Columns)
+            {
+                return false;
+            }
+
+            selectedCell = new Vector2Int(-1, -1);
+            Vector2Int source = new Vector2Int(column, row);
+            Vector2Int target = new Vector2Int(targetColumn, targetRow);
+            StartCoroutine(TrySwapRoutine(source, target));
+            return true;
+        }
+
         private void RestartGame()
         {
             if (processing)

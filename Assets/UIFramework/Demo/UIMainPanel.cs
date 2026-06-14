@@ -10,6 +10,7 @@ namespace GameUI.Demo
         protected override void OnInitialize()
         {
             GetUI<Button>("Match3Button").onClick.AddListener(OpenMatch3);
+            GetUI<Button>("MergeTwoButton").onClick.AddListener(OpenMergeTwo);
             GetUI<Button>("InventoryButton").onClick.AddListener(OpenInventory);
             GetUI<Button>("SettingsButton").onClick.AddListener(OpenSettings);
             GetUI<Button>("DialogButton").onClick.AddListener(OpenDialog);
@@ -18,6 +19,11 @@ namespace GameUI.Demo
         private async void OpenMatch3()
         {
             await UIManager.Instance.OpenAsync("Match3");
+        }
+
+        private async void OpenMergeTwo()
+        {
+            await UIManager.Instance.OpenAsync("MergeTwo");
         }
 
         private async void OpenInventory()

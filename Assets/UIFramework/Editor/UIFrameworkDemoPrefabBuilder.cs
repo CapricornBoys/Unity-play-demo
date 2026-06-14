@@ -15,6 +15,8 @@ namespace GameUI.Editor
     {
         private const string PrefabFolder = "Assets/UIFramework/Demo/Prefabs";
         private const string Match3PrefabPath = PrefabFolder + "/Match3Panel.prefab";
+        private const string MergeTwoPrefabPath =
+            PrefabFolder + "/MergeTwoPanel.prefab";
 
         /// <summary>
         /// 新增示例资源尚未生成时，在脚本编译完成后自动补建一次。
@@ -23,7 +25,8 @@ namespace GameUI.Editor
         [DidReloadScripts]
         private static void RebuildWhenMatch3PrefabIsMissing()
         {
-            if (AssetDatabase.LoadAssetAtPath<GameObject>(Match3PrefabPath) == null)
+            if (AssetDatabase.LoadAssetAtPath<GameObject>(Match3PrefabPath) == null
+                || AssetDatabase.LoadAssetAtPath<GameObject>(MergeTwoPrefabPath) == null)
             {
                 Rebuild();
             }
@@ -38,6 +41,7 @@ namespace GameUI.Editor
             BuildDialogPanel();
             BuildInventoryPanel();
             BuildMatch3Panel();
+            BuildMergeTwoPanel();
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -55,15 +59,17 @@ namespace GameUI.Editor
             CreateText(root.transform, "Title", "UI Framework Demo", 46,
                 new Vector2(0f, 280f), new Vector2(700f, 90f));
             CreateButton(root.transform, "Match3Button", "Open Match 3",
-                new Vector2(0f, 170f));
+                new Vector2(0f, 190f));
+            CreateButton(root.transform, "MergeTwoButton", "Open Merge Two",
+                new Vector2(0f, 100f));
             CreateButton(root.transform, "InventoryButton", "Open Inventory",
-                new Vector2(0f, 70f));
+                new Vector2(0f, 10f));
             CreateButton(root.transform, "SettingsButton", "Open Settings",
-                new Vector2(0f, -30f));
+                new Vector2(0f, -80f));
             CreateButton(root.transform, "DialogButton", "Open Dialog",
-                new Vector2(0f, -130f));
+                new Vector2(0f, -170f));
             CreateText(root.transform, "Hint", "ESC: close top panel", 24,
-                new Vector2(0f, -260f), new Vector2(600f, 60f));
+                new Vector2(0f, -275f), new Vector2(600f, 60f));
 
             SaveAddressablePrefab(root, "MainPanel.prefab", "UI/MainPanel");
         }
@@ -207,6 +213,76 @@ namespace GameUI.Editor
             SaveAddressablePrefab(root, "Match3Panel.prefab", "UI/Match3Panel");
         }
 
+        private static void BuildMergeTwoPanel()
+        {
+            GameObject root = CreatePanelRoot(
+                "MergeTwoPanel",
+                Vector2.zero,
+                new Color(0.025f, 0.035f, 0.065f, 1f),
+                true);
+
+            CreateTextAnchored(
+                root.transform,
+                "MergeTwoTitle",
+                "MERGE TWO",
+                46,
+                new Vector2(0f, 1f),
+                new Vector2(0f, 1f),
+                new Vector2(38f, -94f),
+                new Vector2(430f, -20f),
+                TextAnchor.MiddleLeft);
+
+            CreateAnchoredButton(
+                root.transform,
+                "RestartButton",
+                "Restart",
+                new Vector2(1f, 1f),
+                new Vector2(1f, 1f),
+                new Vector2(-450f, -88f),
+                new Vector2(-250f, -24f));
+
+            CreateAnchoredButton(
+                root.transform,
+                "CloseButton",
+                "Close",
+                new Vector2(1f, 1f),
+                new Vector2(1f, 1f),
+                new Vector2(-230f, -88f),
+                new Vector2(-30f, -24f));
+
+            GameObject boardFrameObject = new GameObject(
+                "BoardFrame",
+                typeof(RectTransform),
+                typeof(Image));
+            RectTransform boardFrame = boardFrameObject.GetComponent<RectTransform>();
+            boardFrame.SetParent(root.transform, false);
+            boardFrame.anchorMin = new Vector2(0.5f, 0.5f);
+            boardFrame.anchorMax = new Vector2(0.5f, 0.5f);
+            boardFrame.pivot = new Vector2(0.5f, 0.5f);
+            boardFrame.anchoredPosition = new Vector2(-220f, -20f);
+            boardFrame.sizeDelta = new Vector2(850f, 850f);
+            boardFrameObject.GetComponent<Image>().color =
+                new Color(0.06f, 0.08f, 0.13f, 1f);
+
+            GameObject boardRootObject = new GameObject(
+                "BoardRoot",
+                typeof(RectTransform));
+            RectTransform boardRoot = boardRootObject.GetComponent<RectTransform>();
+            boardRoot.SetParent(boardFrame, false);
+            boardRoot.anchorMin = new Vector2(0.5f, 0.5f);
+            boardRoot.anchorMax = new Vector2(0.5f, 0.5f);
+            boardRoot.pivot = new Vector2(0f, 1f);
+            boardRoot.anchoredPosition = new Vector2(-366f, 366f);
+            boardRoot.sizeDelta = new Vector2(732f, 732f);
+
+            CreateMatch3TileTemplate(boardRoot);
+            CreateMergeTwoHud(root.transform);
+            SaveAddressablePrefab(
+                root,
+                "MergeTwoPanel.prefab",
+                "UI/MergeTwoPanel");
+        }
+
         private static void CreateMatch3TileTemplate(RectTransform boardRoot)
         {
             GameObject tileObject = new GameObject(
@@ -277,6 +353,55 @@ namespace GameUI.Editor
                 hud,
                 "StatusText",
                 "Match three or more tiles",
+                24,
+                new Vector2(0.08f, 0.18f),
+                new Vector2(0.92f, 0.52f),
+                Vector2.zero,
+                Vector2.zero,
+                TextAnchor.MiddleCenter);
+        }
+
+        private static void CreateMergeTwoHud(Transform parent)
+        {
+            GameObject hudObject = new GameObject(
+                "GameHud",
+                typeof(RectTransform),
+                typeof(Image));
+            RectTransform hud = hudObject.GetComponent<RectTransform>();
+            hud.SetParent(parent, false);
+            hud.anchorMin = new Vector2(0.72f, 0.18f);
+            hud.anchorMax = new Vector2(0.96f, 0.78f);
+            hud.offsetMin = Vector2.zero;
+            hud.offsetMax = Vector2.zero;
+            hudObject.GetComponent<Image>().color =
+                new Color(0.07f, 0.1f, 0.16f, 1f);
+
+            CreateTextAnchored(
+                hud,
+                "ScoreText",
+                "Score: 0",
+                36,
+                new Vector2(0.08f, 0.74f),
+                new Vector2(0.92f, 0.9f),
+                Vector2.zero,
+                Vector2.zero,
+                TextAnchor.MiddleCenter);
+
+            CreateTextAnchored(
+                hud,
+                "MovesText",
+                "Moves: 0",
+                30,
+                new Vector2(0.08f, 0.58f),
+                new Vector2(0.92f, 0.72f),
+                Vector2.zero,
+                Vector2.zero,
+                TextAnchor.MiddleCenter);
+
+            CreateTextAnchored(
+                hud,
+                "StatusText",
+                "Merge two equal adjacent tiles",
                 24,
                 new Vector2(0.08f, 0.18f),
                 new Vector2(0.92f, 0.52f),

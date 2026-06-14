@@ -2,13 +2,12 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace GameUI.Match3
+namespace GameUI.MergeTwo
 {
     /// <summary>
-    /// 单个三消棋子的视图组件。
-    /// 该组件由 Match3Panel 在运行时动态挂载，不保存在 Prefab 中。
+    /// Runtime view for one merge-two board cell.
     /// </summary>
-    public sealed class Match3TileView :
+    public sealed class MergeTwoTileView :
         MonoBehaviour,
         IPointerDownHandler,
         IPointerClickHandler,
@@ -17,29 +16,61 @@ namespace GameUI.Match3
         private const float DragThreshold = 32f;
 
         private Image background;
-        private Image gemImage;
-        private Match3Panel owner;
+        private Image tileImage;
+        private Text valueText;
+        private MergeTwoPanel owner;
         private bool dragTriggered;
 
         public RectTransform RectTransform { get; private set; }
         public int Row { get; private set; }
         public int Column { get; private set; }
-        public int Type { get; private set; }
+        public int Level { get; private set; }
 
-        public void Initialize(Match3Panel panel)
+        public void Initialize(MergeTwoPanel panel)
         {
             owner = panel;
             RectTransform = GetComponent<RectTransform>();
             background = GetComponent<Image>();
-            gemImage = transform.Find("Gem").GetComponent<Image>();
+            tileImage = transform.Find("Gem").GetComponent<Image>();
+
+            GameObject labelObject = new GameObject(
+                "Value",
+                typeof(RectTransform),
+                typeof(Text));
+            RectTransform labelRect = labelObject.GetComponent<RectTransform>();
+            labelRect.SetParent(tileImage.transform, false);
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.one;
+            labelRect.offsetMin = Vector2.zero;
+            labelRect.offsetMax = Vector2.zero;
+
+            valueText = labelObject.GetComponent<Text>();
+            valueText.font =
+                Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            valueText.alignment = TextAnchor.MiddleCenter;
+            valueText.fontStyle = FontStyle.Bold;
+            valueText.color = Color.white;
+            valueText.raycastTarget = false;
         }
 
-        public void Bind(int row, int column, int type, Color color, bool selected)
+        public void Bind(
+            int row,
+            int column,
+            int level,
+            Color color,
+            bool selected)
         {
             Row = row;
             Column = column;
-            Type = type;
-            gemImage.color = color;
+            Level = level;
+
+            bool occupied = level >= 0;
+            tileImage.enabled = occupied;
+            tileImage.color = color;
+            valueText.text = occupied
+                ? GetTileValue(level).ToString()
+                : string.Empty;
+            valueText.fontSize = level < 6 ? 30 : 23;
             background.color = selected
                 ? new Color(1f, 0.82f, 0.24f, 1f)
                 : new Color(0.12f, 0.15f, 0.22f, 1f);
@@ -52,13 +83,11 @@ namespace GameUI.Match3
 
         public void OnPointerDown(PointerEventData eventData)
         {
-            // 每次按下都开始一次新的手势，防止上一次拖拽影响后续点击。
             dragTriggered = false;
         }
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            // 已经执行过拖拽交换时，不再把松手事件当作一次点击。
             if (eventData.button == PointerEventData.InputButton.Left
                 && !dragTriggered)
             {
@@ -80,7 +109,6 @@ namespace GameUI.Match3
                 return;
             }
 
-            // 只取位移最大的轴，保证一次拖拽只交换一个相邻棋子。
             Vector2Int direction;
             if (Mathf.Abs(dragDelta.x) >= Mathf.Abs(dragDelta.y))
             {
@@ -88,12 +116,16 @@ namespace GameUI.Match3
             }
             else
             {
-                // 屏幕坐标向上为正，而棋盘行号向下递增，因此需要反转 Y。
                 direction = new Vector2Int(0, dragDelta.y > 0f ? -1 : 1);
             }
 
             dragTriggered = owner != null
-                            && owner.TryDragSwap(Row, Column, direction);
+                            && owner.TryDragMove(Row, Column, direction);
+        }
+
+        private static int GetTileValue(int level)
+        {
+            return 1 << Mathf.Clamp(level + 1, 1, 20);
         }
     }
 }

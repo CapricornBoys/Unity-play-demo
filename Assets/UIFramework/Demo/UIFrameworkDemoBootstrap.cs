@@ -21,6 +21,13 @@ namespace GameUI.Demo
                 cache: true,
                 layout: UIPanelLayout.FullScreen);
 
+            manager.Register<GameUI.MergeTwo.MergeTwoPanel>(
+                "MergeTwo",
+                "UI/MergeTwoPanel",
+                UILayer.Normal,
+                cache: true,
+                layout: UIPanelLayout.FullScreen);
+
             manager.Register<GameUI.Inventory.InventoryPanel>(
                 "Inventory",
                 "UI/InventoryPanel",

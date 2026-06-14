@@ -17,6 +17,11 @@ MonoBehaviour:
     m_SerializedData: []
   m_GUID: 22e6e83439d5dd6459ef338535d00031
   m_SerializeEntries:
+  - m_GUID: 079806dd3a0f3ae4488010194f04cf3e
+    m_Address: UI/MergeTwoPanel
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 08df54fdab968d743ad6cd40eb08e8bd
     m_Address: UI/MainPanel
     m_ReadOnly: 0
